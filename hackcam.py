@@ -61,7 +61,7 @@ def sftp_connect(config):
 
 def sftp_put(sftp, localpath, remotepath):
     try:
-        sftp.put(localpath, "./test.jpg")
+        sftp.put(localpath, remotepath)
     except IOError, e:
         print " [*] " + str(e)
         sys.exit(1)
