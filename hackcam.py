@@ -46,7 +46,9 @@ def sftp_connect(config):
         username = config["username"]
         pkeyfile = config["privatekey_file"]
         pkeypassword = config["privatekey_passphrase"]
-
+        host_keys = load_host_keys(config["hostkeys_file"])
+        hostkeytype, hostkey = get_hostkeytype_and_hostkey(host_keys,
+                                                           config["hostname"])
         t = Transport((hostname, port))
         pkey = get_privatekey_from_file(pkeyfile, pkeypassword) 
         t.connect(username=username, pkey=pkey, hostkey=hostkey)
@@ -83,17 +85,12 @@ def parse_configuration():
 
 if __name__ == "__main__":
     config = parse_configuration()
-
     camera = cv.CaptureFromCAM(int(config["camera_index"]))
-    frame = capture_frame(camera)
     framefilename = datetime.now().strftime("%Y.%m.%d-%H:%M")+".jpg"
     framepath = os.getcwd()+"/"+framefilename
 
+    frame = capture_frame(camera)
     save_frame_to_file(framepath, frame)
-
-    host_keys = load_host_keys(config["hostkeys_file"])
-    hostkeytype, hostkey = get_hostkeytype_and_hostkey(host_keys,
-                                                       config["hostname"])
 
     sftp = sftp_connect(config)
     sftp_put(sftp, framepath, framefilename)
