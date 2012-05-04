@@ -16,7 +16,7 @@ HOSTKEYS = "~/.ssh/known_hosts"
 HOSTNAME = "192.168.100.40"
 PORT = 22
 USERNAME = "user"
-PKEYFILE = "/home/marant/.ssh/id_rsa"
+PKEYFILE = "~/.ssh/id_rsa"
 PKEYPASSWORD = ""
 
 
