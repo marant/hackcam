@@ -56,6 +56,14 @@ def connect(hostkey, hostname, port, username, pkeyfile):
 
 def initializeSFTPClient(transport):
     return SFTPClient.from_transport(transport)
+
+def sftp_put(sftp, localpath, remotepath):
+    try:
+        sftp.put(localpath, "./test.jpg")
+    except IOError, e:
+        print " [*] " + str(e)
+        sys.exit(1)
+
     
 
 frame = captureFrame(camera)
@@ -64,10 +72,9 @@ saveFrameToFile("test.jpg", frame)
 host_keys = loadHostKeys(HOSTKEYS)
 hostkeytype, hostkey = getHostKeyAndKeyType(host_keys)
 transport = connect(hostkey, HOSTNAME, PORT, USERNAME, PKEYFILE )
+
 sftp = initializeSFTPClient(transport)
-
-sftp.put("/home/marant/programming/python/hackcam/test.jpg", "./test.jpg")
-
+sftp_put(sftp, os.getcwd()+"/test.jpg", "test.jpg")
 sftp.close()
 
 
