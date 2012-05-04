@@ -57,9 +57,6 @@ def sftp_connect(hostkey, hostname, port, username, pkeyfile):
         print " [*] " + str(e)
         sys.exit(1)
 
-def initializeSFTPClient(transport):
-    return SFTPClient.from_transport(transport)
-
 def sftp_put(sftp, localpath, remotepath):
     try:
         sftp.put(localpath, "./test.jpg")
