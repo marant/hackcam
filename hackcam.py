@@ -20,14 +20,14 @@ PKEYPASSWORD = ""
 
 camera = cv.CaptureFromCAM(CAMERA_INDEX)
 
-def captureFrame(camera):
+def capture_frame(camera):
     frame = cv.QueryFrame(camera)
     return frame
 
-def saveFrameToFile(frame, framefile):
+def save_frame_to_file(frame, framefile):
     cv.SaveImage(frame, framefile)
 
-def loadHostKeys(path):
+def load_host_keys(path):
     try:
         host_keys = paramiko.util.load_host_keys(os.path.expanduser(path))
         return host_keys
@@ -35,21 +35,23 @@ def loadHostKeys(path):
         print " [*] " + str(e)
         sys.exit(1)
 
-def getHostKeyAndKeyType(host_keys):
+def get_hostkeytype_and_hostkey(host_keys):
     hostkeytype =  host_keys[HOSTNAME].keys()[0]
     hostkey = host_keys[HOSTNAME][hostkeytype]
 
     return hostkeytype, hostkey
 
-def getPrivateKeyFromFile(pkeyfile, pkeypassword):
+def get_privatekey_from_file(pkeyfile, pkeypassword):
     return RSAKey.from_private_key_file(pkeyfile) 
 
-def connect(hostkey, hostname, port, username, pkeyfile):
+def sftp_connect(hostkey, hostname, port, username, pkeyfile):
     try:
         t = Transport((HOSTNAME, PORT))
-        pkey = getPrivateKeyFromFile(PKEYFILE, PKEYPASSWORD) 
+        pkey = get_privatekey_from_file(PKEYFILE, PKEYPASSWORD) 
         t.connect(username=username, pkey=pkey, hostkey=hostkey)
-        return t
+
+        return SFTPClient.from_transport(t)
+
     except SSHException, e:
         print " [*] " + str(e)
         sys.exit(1)
@@ -64,17 +66,13 @@ def sftp_put(sftp, localpath, remotepath):
         print " [*] " + str(e)
         sys.exit(1)
 
-    
+if __name__ == "__main__":
+    frame = capture_frame(camera)
+    save_frame_to_file("test.jpg", frame)
 
-frame = captureFrame(camera)
-saveFrameToFile("test.jpg", frame)
+    host_keys = load_host_keys(HOSTKEYS)
+    hostkeytype, hostkey = get_hostkeytype_and_hostkey(host_keys)
 
-host_keys = loadHostKeys(HOSTKEYS)
-hostkeytype, hostkey = getHostKeyAndKeyType(host_keys)
-transport = connect(hostkey, HOSTNAME, PORT, USERNAME, PKEYFILE )
-
-sftp = initializeSFTPClient(transport)
-sftp_put(sftp, os.getcwd()+"/test.jpg", "test.jpg")
-sftp.close()
-
-
+    sftp = sftp_connect(hostkey, HOSTNAME, PORT, USERNAME, PKEYFILE)
+    sftp_put(sftp, os.getcwd()+"/test.jpg", "test.jpg")
+    sftp.close()
