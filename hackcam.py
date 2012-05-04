@@ -9,6 +9,7 @@ from paramiko import SSHException
 from paramiko import Transport
 from paramiko import RSAKey 
 from paramiko import SFTPClient
+from datetime import datetime
 
 CAMERA_INDEX = 0
 HOSTKEYS = "~/.ssh/known_hosts"
@@ -69,11 +70,14 @@ def sftp_put(sftp, localpath, remotepath):
 if __name__ == "__main__":
     camera = cv.CaptureFromCAM(CAMERA_INDEX)
     frame = capture_frame(camera)
-    save_frame_to_file("test.jpg", frame)
+    framefilename = datetime.now().strftime("%Y.%m.%d-%H:%M")+".jpg"
+    framepath = os.getcwd()+"/"+framefilename
+
+    save_frame_to_file(framepath, frame)
 
     host_keys = load_host_keys(HOSTKEYS)
     hostkeytype, hostkey = get_hostkeytype_and_hostkey(host_keys)
 
     sftp = sftp_connect(hostkey, HOSTNAME, PORT, USERNAME, PKEYFILE)
-    sftp_put(sftp, os.getcwd()+"/test.jpg", "test.jpg")
+    sftp_put(sftp, framepath, framefilename)
     sftp.close()
