@@ -18,7 +18,6 @@ USERNAME = "user"
 PKEYFILE = "/home/marant/.ssh/id_rsa"
 PKEYPASSWORD = ""
 
-camera = cv.CaptureFromCAM(CAMERA_INDEX)
 
 def capture_frame(camera):
     frame = cv.QueryFrame(camera)
@@ -68,6 +67,7 @@ def sftp_put(sftp, localpath, remotepath):
         sys.exit(1)
 
 if __name__ == "__main__":
+    camera = cv.CaptureFromCAM(CAMERA_INDEX)
     frame = capture_frame(camera)
     save_frame_to_file("test.jpg", frame)
 
