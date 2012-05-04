@@ -10,15 +10,9 @@ from paramiko import Transport
 from paramiko import RSAKey 
 from paramiko import SFTPClient
 from datetime import datetime
+from ConfigParser import ConfigParser
 
-CAMERA_INDEX = 0
-HOSTKEYS = "~/.ssh/known_hosts"
-HOSTNAME = "192.168.100.40"
-PORT = 22
-USERNAME = "user"
-PKEYFILE = "~/.ssh/id_rsa"
-PKEYPASSWORD = ""
-
+CONFIG_FILE = os.getcwd()+"/config"
 
 def capture_frame(camera):
     frame = cv.QueryFrame(camera)
@@ -35,20 +29,26 @@ def load_host_keys(path):
         print " [*] " + str(e)
         sys.exit(1)
 
-def get_hostkeytype_and_hostkey(host_keys):
-    hostkeytype =  host_keys[HOSTNAME].keys()[0]
-    hostkey = host_keys[HOSTNAME][hostkeytype]
+def get_hostkeytype_and_hostkey(host_keys, hostname):
+    hostkeytype =  host_keys[hostname].keys()[0]
+    hostkey = host_keys[hostname][hostkeytype]
 
     return hostkeytype, hostkey
 
 def get_privatekey_from_file(pkeyfile, pkeypassword):
     expandedpath = os.path.expanduser(pkeyfile)
-    return RSAKey.from_private_key_file(expandedpath, password=PKEYPASSWORD)
+    return RSAKey.from_private_key_file(expandedpath, password=pkeypassword)
 
-def sftp_connect(hostkey, hostname, port, username, pkeyfile):
+def sftp_connect(config):
     try:
-        t = Transport((HOSTNAME, PORT))
-        pkey = get_privatekey_from_file(PKEYFILE, PKEYPASSWORD) 
+        hostname = config["hostname"]
+        port = int(config["port"])
+        username = config["username"]
+        pkeyfile = config["privatekey_file"]
+        pkeypassword = config["privatekey_passphrase"]
+
+        t = Transport((hostname, port))
+        pkey = get_privatekey_from_file(pkeyfile, pkeypassword) 
         t.connect(username=username, pkey=pkey, hostkey=hostkey)
 
         return SFTPClient.from_transport(t)
@@ -64,17 +64,37 @@ def sftp_put(sftp, localpath, remotepath):
         print " [*] " + str(e)
         sys.exit(1)
 
+def parse_configuration():
+    config = ConfigParser()
+    config.read(CONFIG_FILE)
+    config_dict = {}
+
+    for section in config.sections():
+        options = config.options(section)
+
+        for option in options:
+            try:
+                config_dict[option] = config.get(section, option)
+            except ConfigParser.Error, e:
+                print " [*] " + str(e)
+                sys.exit(1)
+
+    return config_dict
+
 if __name__ == "__main__":
-    camera = cv.CaptureFromCAM(CAMERA_INDEX)
+    config = parse_configuration()
+
+    camera = cv.CaptureFromCAM(int(config["camera_index"]))
     frame = capture_frame(camera)
     framefilename = datetime.now().strftime("%Y.%m.%d-%H:%M")+".jpg"
     framepath = os.getcwd()+"/"+framefilename
 
     save_frame_to_file(framepath, frame)
 
-    host_keys = load_host_keys(HOSTKEYS)
-    hostkeytype, hostkey = get_hostkeytype_and_hostkey(host_keys)
+    host_keys = load_host_keys(config["hostkeys_file"])
+    hostkeytype, hostkey = get_hostkeytype_and_hostkey(host_keys,
+                                                       config["hostname"])
 
-    sftp = sftp_connect(hostkey, HOSTNAME, PORT, USERNAME, PKEYFILE)
+    sftp = sftp_connect(config)
     sftp_put(sftp, framepath, framefilename)
     sftp.close()

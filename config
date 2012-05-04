@@ -1,0 +1,21 @@
+[Camera]
+camera_index: 0
+
+[SSH]
+# Path to known_hosts file
+hostkeys_file: ~/.ssh/known_hosts
+
+# Path to private key file
+privatekey_file: ~/.ssh/id_rsa
+
+# Hostname of the server
+hostname: 192.168.100.40
+
+# SSH port
+port: 22
+
+# SSH Username
+username: user
+
+# Privatekey passphrase
+privatekey_passphrase: ""
