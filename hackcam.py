@@ -42,7 +42,8 @@ def get_hostkeytype_and_hostkey(host_keys):
     return hostkeytype, hostkey
 
 def get_privatekey_from_file(pkeyfile, pkeypassword):
-    return RSAKey.from_private_key_file(pkeyfile) 
+    expandedpath = os.path.expanduser(pkeyfile)
+    return RSAKey.from_private_key_file(expandedpath, password=PKEYPASSWORD)
 
 def sftp_connect(hostkey, hostname, port, username, pkeyfile):
     try:
