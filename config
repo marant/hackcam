@@ -19,3 +19,7 @@ username: user
 
 # Privatekey passphrase
 privatekey_passphrase: ""
+
+# absolute path to the folder containing the images on the remote server
+# will default to user's home directory if left empty
+remote_dir: 

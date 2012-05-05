@@ -86,12 +86,14 @@ def parse_configuration():
 if __name__ == "__main__":
     config = parse_configuration()
     camera = cv.CaptureFromCAM(int(config["camera_index"]))
-    framefilename = datetime.now().strftime("%Y.%m.%d-%H:%M")+".jpg"
-    framepath = os.getcwd()+"/"+framefilename
+    frame_filename = datetime.now().strftime("%Y.%m.%d-%H:%M")+".jpg"
+    local_framepath = os.getcwd()+"/"+frame_filename
+    remote_dir = config["remote_dir"]
+    remote_framepath = remote_dir+frame_filename
 
     frame = capture_frame(camera)
-    save_frame_to_file(framepath, frame)
+    save_frame_to_file(local_framepath, frame)
 
     sftp = sftp_connect(config)
-    sftp_put(sftp, framepath, framefilename)
+    sftp_put(sftp, local_framepath, remote_framepath)
     sftp.close()
